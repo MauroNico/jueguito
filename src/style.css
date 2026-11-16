@@ -1,0 +1,588 @@
+:root {
+  --bg-dark: #070913;
+  --panel-bg: rgba(12, 16, 34, 0.86);
+  --neon-cyan: #00f5d4;
+  --neon-pink: #ff2e93;
+  --neon-yellow: #ffbe0b;
+  --military-red: #ff4d4d;
+  --thunder-blue: #38bdf8;
+  --solar-gold: #ffb703;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+}
+
+#game-root {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* HUD Superior */
+.hud-panel {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hud-left,
+.hud-center,
+.hud-right {
+  background: var(--panel-bg);
+  border: 2px solid rgba(0, 245, 212, 0.35);
+  box-shadow: 0 0 18px rgba(0, 245, 212, 0.16);
+  padding: 10px 14px;
+  border-radius: 6px;
+  pointer-events: auto;
+}
+
+.hud-left {
+  min-width: 260px;
+}
+
+.character-badge {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.badge-name {
+  font-weight: 900;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  color: var(--neon-cyan);
+}
+
+.badge-weapon {
+  font-size: 0.72rem;
+  color: var(--neon-pink);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.hp-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hp-bar-bg {
+  flex: 1;
+  height: 14px;
+  background: #161b2e;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+
+.hp-bar-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #ff2e93, #00f5d4);
+  transition: width 0.1s linear;
+}
+
+.hp-text {
+  font-size: 0.78rem;
+  font-weight: 700;
+  min-width: 68px;
+  text-align: right;
+}
+
+.state-chip {
+  margin-top: 6px;
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  background: rgba(0, 245, 212, 0.15);
+  border: 1px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+}
+
+.hud-center {
+  text-align: center;
+  border-color: rgba(255, 46, 147, 0.45);
+}
+
+.room-indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+#room-label {
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+.room-status {
+  font-size: 0.72rem;
+  color: var(--neon-yellow);
+  font-weight: 700;
+}
+
+.enemies-remaining {
+  margin-top: 4px;
+  font-size: 0.85rem;
+}
+
+.combo-display {
+  margin-top: 6px;
+  font-weight: 900;
+  color: var(--neon-pink);
+  text-shadow: 0 0 8px rgba(255, 46, 147, 0.7);
+}
+
+.hud-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 300px;
+}
+
+.upgrades-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.upgrade-chip {
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+}
+
+.upgrade-chip.military {
+  color: var(--military-red);
+  background: rgba(255, 77, 77, 0.14);
+}
+.upgrade-chip.thunder {
+  color: var(--thunder-blue);
+  background: rgba(56, 189, 248, 0.14);
+}
+.upgrade-chip.solar {
+  color: var(--solar-gold);
+  background: rgba(255, 183, 3, 0.14);
+}
+
+/* Boss HUD */
+.boss-hud {
+  position: absolute;
+  top: 108px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(520px, 84vw);
+  background: var(--panel-bg);
+  border: 2px solid var(--military-red);
+  padding: 8px 14px;
+  text-align: center;
+  z-index: 10;
+}
+
+.boss-title {
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: var(--military-red);
+  margin-bottom: 6px;
+}
+
+.boss-hp-bg {
+  height: 14px;
+  background: #1a1016;
+  border: 1px solid rgba(255, 77, 77, 0.4);
+}
+
+.boss-hp-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #9b2226, #ff4d4d);
+  transition: width 0.08s linear;
+}
+
+/* Barra de Carga / Canalización */
+.charge-hud {
+  position: absolute;
+  bottom: 108px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+  background: var(--panel-bg);
+  border: 2px solid var(--neon-yellow);
+  padding: 6px 10px;
+  text-align: center;
+  z-index: 10;
+}
+
+#charge-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: var(--neon-yellow);
+  margin-bottom: 4px;
+}
+
+.charge-bar-bg {
+  height: 10px;
+  background: #111827;
+}
+
+.charge-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #00f5d4, #ffbe0b);
+}
+
+/* Habilidades Inferiores */
+.hud-skills {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+.skill-slot {
+  position: relative;
+  width: 88px;
+  height: 68px;
+  background: var(--panel-bg);
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.skill-slot kbd {
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: var(--neon-cyan);
+  background: rgba(0, 245, 212, 0.12);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.skill-name {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+
+.skill-cd {
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 9, 19, 0.78);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: var(--neon-yellow);
+}
+
+.skill-cd.active {
+  display: flex;
+}
+
+/* Botones Neón */
+.neon-btn {
+  cursor: pointer;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  border: 2px solid var(--neon-cyan);
+  background: rgba(0, 245, 212, 0.14);
+  color: var(--text-main);
+  padding: 8px 14px;
+  border-radius: 5px;
+  transition: transform 0.1s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.neon-btn:hover {
+  background: rgba(0, 245, 212, 0.28);
+  box-shadow: 0 0 16px rgba(0, 245, 212, 0.4);
+}
+
+.neon-btn.primary {
+  border-color: var(--neon-pink);
+  background: linear-gradient(135deg, rgba(255, 46, 147, 0.35), rgba(0, 245, 212, 0.25));
+}
+
+.neon-btn.large {
+  padding: 13px 28px;
+  font-size: 1rem;
+}
+
+.neon-btn.small {
+  padding: 5px 10px;
+  font-size: 0.74rem;
+}
+
+/* Native <dialog> modals following modern-web-guidance */
+dialog {
+  margin: auto;
+  padding: 0;
+  border: 2px solid var(--neon-cyan);
+  border-radius: 10px;
+  background: rgba(10, 13, 28, 0.96);
+  color: var(--text-main);
+  box-shadow: 0 0 42px rgba(0, 245, 212, 0.28);
+  max-width: min(860px, 92vw);
+  width: 100%;
+}
+
+dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog::backdrop {
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background: rgba(5, 7, 15, 0.8);
+  backdrop-filter: blur(5px);
+}
+
+.dialog-content {
+  padding: 28px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: var(--neon-cyan);
+}
+
+.dialog-content h1,
+.dialog-content h2 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  background: linear-gradient(90deg, #00f5d4, #ff2e93);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.subtitle {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.85rem;
+}
+
+.controls-grid kbd {
+  display: inline-block;
+  min-width: 64px;
+  text-align: center;
+  margin-right: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0, 245, 212, 0.18);
+  color: var(--neon-cyan);
+  font-weight: 800;
+}
+
+.time-select-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  align-items: center;
+}
+
+.time-select-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--neon-yellow);
+}
+
+.time-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.time-choice {
+  cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 5px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.time-choice.active {
+  border-color: var(--neon-yellow);
+  background: rgba(255, 190, 11, 0.18);
+  color: var(--neon-yellow);
+}
+
+/* Tarjetas de Mejoras */
+.upgrade-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+}
+
+@media (max-width: 720px) {
+  .upgrade-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.upgrade-card {
+  cursor: pointer;
+  text-align: left;
+  padding: 18px 16px;
+  border-radius: 8px;
+  background: rgba(18, 24, 48, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.12s ease, box-shadow 0.15s ease;
+}
+
+.upgrade-card:hover {
+  transform: translateY(-4px);
+}
+
+.upgrade-card.military {
+  border-color: var(--military-red);
+}
+.upgrade-card.military:hover {
+  box-shadow: 0 0 22px rgba(255, 77, 77, 0.4);
+}
+.upgrade-card.thunder {
+  border-color: var(--thunder-blue);
+}
+.upgrade-card.thunder:hover {
+  box-shadow: 0 0 22px rgba(56, 189, 248, 0.4);
+}
+.upgrade-card.solar {
+  border-color: var(--solar-gold);
+}
+.upgrade-card.solar:hover {
+  box-shadow: 0 0 22px rgba(255, 183, 3, 0.4);
+}
+
+.upgrade-badge {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.upgrade-card.military .upgrade-badge {
+  color: var(--military-red);
+}
+.upgrade-card.thunder .upgrade-badge {
+  color: var(--thunder-blue);
+}
+.upgrade-card.solar .upgrade-badge {
+  color: var(--solar-gold);
+}
+
+.upgrade-card h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.upgrade-card p {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.end-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(160px, 1fr));
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 14px 20px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NEON HAMMER: DEAD STREET — Roguelite 2.5D</title>
+  </head>
+  <body>
+    <div id="game-root">
+      <canvas id="game-canvas" aria-label="Lienzo del juego"></canvas>
+
+      <!-- HUD Principal -->
+      <header id="hud-top" class="hud-panel hidden">
+        <div class="hud-left">
+          <div class="character-badge">
+            <span class="badge-name">BARRY</span>
+            <span class="badge-weapon">MARTILLO NEÓN</span>
+          </div>
+          <div class="hp-container">
+            <div class="hp-bar-bg">
+              <div id="player-hp-fill" class="hp-bar-fill"></div>
+            </div>
+            <span id="player-hp-text" class="hp-text">200 / 200</span>
+          </div>
+          <div id="player-state-chip" class="state-chip">LISTO</div>
+        </div>
+
+        <div class="hud-center">
+          <div class="room-indicator">
+            <span id="room-label">HABITACIÓN 1 / 10</span>
+            <span id="room-status" class="room-status">EN COMBATE</span>
+          </div>
+          <div class="enemies-remaining">
+            ENEMIGOS: <strong id="enemies-count">0</strong>
+          </div>
+          <div id="combo-display" class="combo-display hidden">
+            COMBO x<span id="combo-count">0</span>
+          </div>
+        </div>
+
+        <div class="hud-right">
+          <button id="toggle-time-btn" type="button" class="neon-btn small">
+            MODO: <span id="time-mode-label">NOCHE</span> (T)
+          </button>
+          <div id="upgrades-list" class="upgrades-chips"></div>
+        </div>
+      </header>
+
+      <!-- Barra de Boss (Habitación 10) -->
+      <div id="boss-hud" class="boss-hud hidden">
+        <div class="boss-title">GENERAL CORRUPTO — JEFE MILITAR</div>
+        <div class="boss-hp-bg">
+          <div id="boss-hp-fill" class="boss-hp-fill"></div>
+        </div>
+      </div>
+
+      <!-- Barra de Canalización / Carga -->
+      <div id="charge-hud" class="charge-hud hidden">
+        <span id="charge-label">CANALIZANDO...</span>
+        <div class="charge-bar-bg">
+          <div id="charge-fill" class="charge-fill"></div>
+        </div>
+      </div>
+
+      <!-- Barra Inferior de Habilidades -->
+      <footer id="hud-bottom" class="hud-skills hidden">
+        <div class="skill-slot" data-skill="basic">
+          <kbd>RMB</kbd>
+          <span class="skill-name">BARRIDA</span>
+          <div class="skill-cd" id="cd-basic"></div>
+        </div>
+        <div class="skill-slot" data-skill="heavy">
+          <kbd>LMB</kbd>
+          <span class="skill-name">CARGA 2s</span>
+          <div class="skill-cd" id="cd-heavy"></div>
+        </div>
+        <div class="skill-slot" data-skill="q">
+          <kbd>Q</kbd>
+          <span class="skill-name">SALTO MARTILLO</span>
+          <div class="skill-cd" id="cd-q"></div>
+        </div>
+        <div class="skill-slot" data-skill="dash">
+          <kbd>SPACE</kbd>
+          <span class="skill-name">ESQUIVE</span>
+          <div class="skill-cd" id="cd-dash"></div>
+        </div>
+        <div class="skill-slot" data-skill="ult">
+          <kbd>E</kbd>
+          <span class="skill-name">CICLÓN 5s</span>
+          <div class="skill-cd" id="cd-ult"></div>
+        </div>
+      </footer>
+
+      <!-- Modal de Inicio de Run -->
+      <dialog id="start-dialog" aria-labelledby="start-dialog-title">
+        <div class="dialog-content start-screen">
+          <p class="eyebrow">ROGUELITE URBANO 2.5D // HD-2D PIXEL ART</p>
+          <h1 id="start-dialog-title">NEON HAMMER: DEAD STREET</h1>
+          <p class="subtitle">
+            Sobrevive a 10 zonas urbanas tomadas por hordas infectadas. Domina el martillo de Barry,
+            esquiva disparos policiales y elige bendiciones Militares, del Dios del Rayo o Solares.
+          </p>
+
+          <div class="controls-grid">
+            <div><kbd>WASD</kbd> Moverse (8 direcciones)</div>
+            <div><kbd>Click Der</kbd> Barrida en área (Combo)</div>
+            <div><kbd>Click Izq</kbd> Canalizar 2s → Embiste Invulnerable</div>
+            <div><kbd>Q</kbd> Tap: Salto Aturdidor / Mantener: 2x Área</div>
+            <div><kbd>Space</kbd> Desplazamiento rápido</div>
+            <div><kbd>E</kbd> Definitiva: Giro 5s (Desorienta)</div>
+          </div>
+
+          <div class="time-select-group">
+            <span class="time-select-label">ILUMINACIÓN DE LA RUN:</span>
+            <div class="time-options">
+              <button type="button" class="time-choice active" data-time="night" autofocus>
+                NOCHE NEÓN (Farolas Dinámicas)
+              </button>
+              <button type="button" class="time-choice" data-time="day">
+                DÍA URBANO (Luz Solar)
+              </button>
+              <button type="button" class="time-choice" data-time="cycle">
+                CICLO DÍA / NOCHE
+              </button>
+            </div>
+          </div>
+
+          <button id="start-run-btn" type="button" class="neon-btn primary large">
+            INICIAR RUN CON BARRY
+          </button>
+        </div>
+      </dialog>
+
+      <!-- Modal de Selección de Mejora (1 de 3) -->
+      <dialog id="upgrade-dialog" closedby="none" aria-labelledby="upgrade-dialog-title">
+        <div class="dialog-content upgrade-screen">
+          <p class="eyebrow">ZONA DESPEJADA // ELIGE TU BENDICIÓN</p>
+          <h2 id="upgrade-dialog-title">SELECCIONA UNA MEJORA</h2>
+          <div id="upgrade-cards-container" class="upgrade-cards"></div>
+        </div>
+      </dialog>
+
+      <!-- Modal de Fin de Run (Victoria o Derrota) -->
+      <dialog id="end-dialog" closedby="none" aria-labelledby="end-dialog-title">
+        <div class="dialog-content end-screen">
+          <p id="end-eyebrow" class="eyebrow">FIN DE LA RUN</p>
+          <h2 id="end-dialog-title">HAS CAÍDO EN LA CALLE</h2>
+          <p id="end-summary" class="subtitle"></p>
+          <div class="end-stats" id="end-stats"></div>
+          <button id="restart-run-btn" type="button" class="neon-btn primary large" autofocus>
+            NUEVA RUN
+          </button>
+        </div>
+      </dialog>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
